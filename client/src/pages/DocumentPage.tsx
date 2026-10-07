@@ -1,7 +1,6 @@
-import { CircleCheck } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Check, CircleCheck, Copy } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router";
-import { toast } from "sonner";
 import type { DocumentDetail } from "../../../shared/types";
 import { CorrectedText } from "@/components/CorrectedText";
 import { CorrectionCard } from "@/components/CorrectionCard";
@@ -23,6 +22,8 @@ export function DocumentPage() {
   const [error, setError] = useState<string>();
   const [active, setActive] = useState<number | null>(null);
   const [showChanges, setShowChanges] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const copiedTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   // only a just-checked document plays its entrance; reopening from history stays instant.
   const [freshId] = useState(passed?.id);
 
@@ -30,6 +31,8 @@ export function DocumentPage() {
   useEffect(() => {
     if (location.state) navigate(location.pathname, { replace: true, state: null });
   }, [location.state, location.pathname, navigate]);
+
+  useEffect(() => () => clearTimeout(copiedTimer.current), []);
 
   useEffect(() => {
     if (doc?.id === id) return;
@@ -60,8 +63,14 @@ export function DocumentPage() {
 
   async function copy() {
     await navigator.clipboard.writeText(doc!.correctedText);
-    toast(t.document.copied);
+    setCopied(true);
+    clearTimeout(copiedTimer.current);
+    copiedTimer.current = setTimeout(() => setCopied(false), 2000);
   }
+
+  const iconSwap =
+    "col-start-1 row-start-1 size-4 transition-[opacity,scale,filter] duration-300 ease-out motion-reduce:transition-opacity";
+  const iconHidden = "scale-25 opacity-0 blur-[4px] motion-reduce:scale-100 motion-reduce:blur-none";
 
   return (
     <PageFrame title={t.document.title} subtitle={formatShortDate(doc.createdAt)}>
@@ -88,7 +97,14 @@ export function DocumentPage() {
                 </Button>
               )}
               <Button variant="outline" onClick={copy} className="h-[42px] rounded-full border-input px-[18px] text-[13px] font-semibold">
+                <span aria-hidden="true" className="grid">
+                  <Copy className={cn(iconSwap, copied && iconHidden)} />
+                  <Check className={cn(iconSwap, !copied && iconHidden)} />
+                </span>
                 {t.document.copy}
+                <span role="status" className="sr-only">
+                  {copied ? t.document.copied : ""}
+                </span>
               </Button>
               <Link to={paths.checker} className={cn(buttonVariants(), "h-[42px] rounded-full px-[22px] text-[13px] font-semibold")}>
                 {t.nav.newCheck}
