@@ -21,7 +21,19 @@ export function SignupPage() {
       password: String(form.get("password")),
     });
     if (error) return setError(clerkErrorMessage(error, t.auth.signupFailed));
-    await signUp.verifications.sendEmailCode();
+    await sendCode();
+  }
+
+  async function sendCode() {
+    setError(undefined);
+    const { error } = await signUp.verifications.sendEmailCode();
+    if (error) setError(clerkErrorMessage(error, t.auth.signupFailed));
+  }
+
+  // clerk keeps the unfinished sign-up, so a mistyped email would otherwise stay stuck on the code screen.
+  async function startOver() {
+    setError(undefined);
+    await signUp.reset();
   }
 
   async function verify(form: FormData) {
@@ -46,13 +58,14 @@ export function SignupPage() {
           {error && <FormError>{error}</FormError>}
           <SubmitButton busy={busy}>{t.auth.verify}</SubmitButton>
         </form>
-        <button
-          type="button"
-          className="auth-link mx-auto mt-5 text-[13px] text-muted-foreground"
-          onClick={() => signUp.verifications.sendEmailCode()}
-        >
-          {t.auth.resendCode}
-        </button>
+        <div className="mt-5 flex justify-center gap-4 text-[13px] text-muted-foreground">
+          <button type="button" className="auth-link" onClick={sendCode}>
+            {t.auth.resendCode}
+          </button>
+          <button type="button" className="auth-link" onClick={startOver}>
+            {t.auth.startOver}
+          </button>
+        </div>
       </AuthLayout>
     );
   }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useLocation, useParams } from "react-router";
+import { Link, useLocation, useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import type { DocumentDetail } from "../../../shared/types";
 import { CorrectedText } from "@/components/CorrectedText";
@@ -15,12 +15,18 @@ import { paths } from "@/routes";
 export function DocumentPage() {
   const { id = "" } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
   const api = useApi();
   const passed = (location.state as { document?: DocumentDetail } | null)?.document;
   const [doc, setDoc] = useState<DocumentDetail | undefined>(passed?.id === id ? passed : undefined);
   const [error, setError] = useState<string>();
   const [active, setActive] = useState<number | null>(null);
   const [showChanges, setShowChanges] = useState(false);
+
+  // history state outlives deletes and sign-outs, so drop it once read;
+  useEffect(() => {
+    if (location.state) navigate(location.pathname, { replace: true, state: null });
+  }, [location.state, location.pathname, navigate]);
 
   useEffect(() => {
     if (doc?.id === id) return;
