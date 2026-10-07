@@ -11,7 +11,6 @@ export const lv = {
   auth: {
     heroTitle: "Rakstiet\nar pārliecību.",
     heroText: "Proof pārbauda latviešu teksta gramatiku, pareizrakstību un interpunkciju.",
-    heroTags: "Gramatika · Pareizrakstība · Stils",
     loginTitle: "Pieteikties",
     loginSubtitle: "Laipni lūdzam atpakaļ — turpiniet tur, kur pārtraucāt.",
     email: "E-pasts",
