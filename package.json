@@ -1,0 +1,13 @@
+{
+  "name": "grammar-checker",
+  "private": true,
+  "workspaces": ["client"],
+  "scripts": {
+    "dev": "npm run dev -w client",
+    "typecheck": "npm run typecheck -w client",
+    "build": "npm run build -w client"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.0"
+  }
+}

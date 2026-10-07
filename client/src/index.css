@@ -1,0 +1,92 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-canvas: var(--canvas);
+  --color-subtle: var(--subtle);
+  --color-faint: var(--faint);
+  --color-hairline: var(--hairline);
+}
+
+/* Design tokens from the Claude design "Grammar Checker — Swiss Design". */
+:root {
+  --radius: 0.75rem;
+  --background: #ffffff;
+  --foreground: #121212;
+  --card: #ffffff;
+  --card-foreground: #121212;
+  --popover: #ffffff;
+  --popover-foreground: #121212;
+  --primary: #121212;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f1ec;
+  --secondary-foreground: #121212;
+  --muted: #f1f1ec;
+  --muted-foreground: #6e6e64;
+  --accent: #f4f4f0;
+  --accent-foreground: #121212;
+  --destructive: #b42318;
+  --border: #ececE6;
+  --input: #e5e5df;
+  --ring: #121212;
+  --canvas: #f3f3ef;
+  --subtle: #8c8c82;
+  --faint: #a6a69c;
+  --hairline: #f0f0eb;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background font-sans text-foreground antialiased;
+  }
+  ::placeholder {
+    color: var(--faint);
+  }
+}
+
+@utility surface {
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  box-shadow: 0 1px 2px rgb(17 17 17 / 0.03), 0 4px 16px rgb(17 17 17 / 0.04);
+}
+
+@utility auth-link {
+  text-decoration: none;
+  border-bottom: 1px solid #deded6;
+  padding-bottom: 1px;
+  transition: border-color 0.15s ease;
+  &:hover {
+    border-color: var(--foreground);
+  }
+}
