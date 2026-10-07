@@ -10,7 +10,7 @@ export const lv = {
   },
   auth: {
     heroTitle: "Rakstiet\nar pārliecību.",
-    heroText: "Proof pārbauda latviešu teksta gramatiku, pareizrakstību un interpunkciju.",
+    heroText: "Pārbaudiet latviešu teksta gramatiku, pareizrakstību un interpunkciju.",
     loginTitle: "Pieteikties",
     loginSubtitle: "Laipni lūdzam atpakaļ — turpiniet tur, kur pārtraucāt.",
     email: "E-pasts",
@@ -63,7 +63,7 @@ export const lv = {
   },
   checker: {
     title: "Ielīmējiet savu tekstu.",
-    subtitle: "Proof pārbauda latviešu teksta gramatiku, pareizrakstību un interpunkciju.",
+    subtitle: "Pārbaudiet latviešu teksta gramatiku, pareizrakstību un interpunkciju.",
     inputLabel: "Pārbaudāmais teksts",
     placeholder: "Ievadiet vai ielīmējiet tekstu, ko vēlaties pārbaudīt…",
     check: "Pārbaudīt tekstu",
