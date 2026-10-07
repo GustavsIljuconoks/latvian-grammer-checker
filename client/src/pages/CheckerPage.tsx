@@ -1,3 +1,4 @@
+import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { MAX_TEXT_CHARS } from "../../../shared/types";
@@ -44,7 +45,10 @@ export function CheckerPage() {
           onChange={(e) => setText(e.target.value)}
           readOnly={busy}
           placeholder={t.checker.placeholder}
-          className="flex-1 resize-none bg-transparent text-base leading-[1.7] text-foreground caret-foreground outline-none"
+          className={cn(
+            "flex-1 resize-none bg-transparent text-base leading-[1.7] text-foreground caret-foreground outline-none transition-opacity duration-200 ease-out",
+            busy && "opacity-60",
+          )}
         />
         {(error || tooLong) && (
           <p role="alert" className="mt-3 text-sm text-destructive">
@@ -60,7 +64,14 @@ export function CheckerPage() {
             disabled={busy || !text.trim() || tooLong}
             className="h-[42px] rounded-full px-[22px] text-[13px] font-semibold"
           >
-            {busy ? t.checker.checking : `${t.checker.check} →`}
+            {busy ? (
+              <>
+                <Loader2 className="size-3.5 animate-spin motion-reduce:[animation-duration:2s]" />
+                {t.checker.checking}
+              </>
+            ) : (
+              `${t.checker.check} →`
+            )}
           </Button>
         </div>
       </div>

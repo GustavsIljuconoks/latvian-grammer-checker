@@ -15,7 +15,7 @@ export function CorrectionCard(props: { correction: Correction; index: number; a
         document.getElementById(`span-${index}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
       }}
       className={cn(
-        "surface block w-full p-5 text-left transition-colors hover:border-[#d8d8d1]",
+        "surface block w-full p-5 text-left [transition:border-color_150ms_ease,scale_150ms_var(--ease-out)] hover:border-[#d8d8d1] active:scale-[0.99] motion-reduce:active:scale-100",
         props.active && "border-foreground hover:border-foreground",
       )}
     >

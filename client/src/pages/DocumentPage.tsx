@@ -1,3 +1,4 @@
+import { CircleCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
@@ -22,6 +23,8 @@ export function DocumentPage() {
   const [error, setError] = useState<string>();
   const [active, setActive] = useState<number | null>(null);
   const [showChanges, setShowChanges] = useState(false);
+  // only a just-checked document plays its entrance; reopening from history stays instant.
+  const [freshId] = useState(passed?.id);
 
   // history state outlives deletes and sign-outs, so drop it once read;
   useEffect(() => {
@@ -52,6 +55,8 @@ export function DocumentPage() {
       </PageFrame>
     );
   }
+
+  const fresh = doc.id === freshId;
 
   async function copy() {
     await navigator.clipboard.writeText(doc!.correctedText);
@@ -97,11 +102,28 @@ export function DocumentPage() {
             {t.document.corrections(doc.corrections.length)}
           </h2>
           {doc.corrections.length === 0 ? (
-            <p className="surface p-5 text-sm text-muted-foreground">{t.document.noErrors}</p>
+            <p className="surface flex items-center gap-3 p-5 text-sm text-muted-foreground">
+              <CircleCheck
+                aria-hidden="true"
+                className={cn(
+                  "size-5 shrink-0 text-foreground",
+                  fresh &&
+                    "transition-[opacity,scale] duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] starting:scale-90 starting:opacity-0 motion-reduce:starting:scale-100",
+                )}
+              />
+              {t.document.noErrors}
+            </p>
           ) : (
             <ol className="flex flex-col gap-3">
               {doc.corrections.map((c, i) => (
-                <li key={i}>
+                <li
+                  key={i}
+                  className={cn(
+                    fresh &&
+                      "transition-[opacity,translate] duration-200 ease-out starting:translate-y-1 starting:opacity-0 motion-reduce:starting:translate-y-0",
+                  )}
+                  style={fresh ? { transitionDelay: `${Math.min(i, 5) * 40}ms` } : undefined}
+                >
                   <CorrectionCard correction={c} index={i} active={active === i} onSelect={() => setActive(i)} />
                 </li>
               ))}

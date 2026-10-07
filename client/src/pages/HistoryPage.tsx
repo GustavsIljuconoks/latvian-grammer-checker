@@ -1,5 +1,6 @@
 import { ChevronDown, ChevronRight, Search, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { flushSync } from "react-dom";
 import { Link } from "react-router";
 import { toast } from "sonner";
 import type { DocumentSummary } from "../../../shared/types";
@@ -54,7 +55,9 @@ export function HistoryPage() {
 
   async function remove(doc: DocumentSummary) {
     await api.deleteDocument(doc.id);
-    setDocs((current) => current?.filter((d) => d.id !== doc.id));
+    const drop = () => setDocs((current) => current?.filter((d) => d.id !== doc.id));
+    if (document.startViewTransition) document.startViewTransition(() => flushSync(drop));
+    else drop();
     refreshRecent();
     toast(t.history.deleted);
   }
@@ -114,7 +117,7 @@ export function HistoryPage() {
           <h2 className="mx-3 mb-1.5 font-mono text-[10px] uppercase tracking-[0.1em] text-faint">{t.history.groups[group]}</h2>
           <ul className="flex flex-col">
             {items.map((doc) => (
-              <li key={doc.id} className="group flex items-center gap-1">
+              <li key={doc.id} className="group flex items-center gap-1" style={{ viewTransitionName: `doc-${doc.id}` }}>
                 <Link
                   to={paths.document(doc.id)}
                   className="flex min-w-0 flex-1 items-center gap-3.5 rounded-xl px-3 py-3.5 transition-colors hover:bg-[#f7f7f4]"

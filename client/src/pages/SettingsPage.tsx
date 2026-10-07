@@ -1,3 +1,4 @@
+import { Tabs as TabsPrimitive } from "@base-ui/react/tabs";
 import { useClerk, useUser } from "@clerk/react";
 import { useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
@@ -8,28 +9,49 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger, tabsListVariants } from "@/components/ui/tabs";
 import { t } from "@/i18n";
 import { useApi } from "@/lib/api";
 import { initials } from "@/lib/format";
+import { cn } from "@/lib/utils";
 
 const fieldClass =
   "h-auto rounded-[10px] border-0 bg-secondary px-3.5 py-3 text-sm shadow-none focus-visible:bg-[#ececE6] focus-visible:ring-2 focus-visible:ring-foreground/15";
 const pillClass = "h-[42px] rounded-full px-[22px] text-[13px] font-semibold";
-const tabClass =
-  "rounded-full px-[18px] py-[9px] text-[13px] font-semibold text-muted-foreground shadow-none data-active:bg-foreground data-active:text-background data-active:shadow-none";
+const TABS = ["profile", "account"] as const;
+const listClass = "h-auto w-fit gap-1 rounded-full p-1";
+const tabShape = "rounded-full px-[18px] py-[9px] text-[13px] font-semibold";
+const tabClass = cn(tabShape, "text-muted-foreground shadow-none data-active:bg-transparent data-active:shadow-none");
 
 export function SettingsPage() {
   return (
     <PageFrame title={t.settings.title} subtitle={t.settings.subtitle}>
       <Tabs defaultValue="profile" className="max-w-[640px]">
-        <TabsList className="mb-7 h-auto w-fit gap-1 rounded-full bg-accent p-1">
-          <TabsTrigger value="profile" className={tabClass}>
-            {t.settings.tabs.profile}
-          </TabsTrigger>
-          <TabsTrigger value="account" className={tabClass}>
-            {t.settings.tabs.account}
-          </TabsTrigger>
+        <TabsList className={cn(listClass, "relative mb-7 bg-accent")}>
+          {TABS.map((tab) => (
+            <TabsTrigger key={tab} value={tab} className={tabClass}>
+              {t.settings.tabs[tab]}
+            </TabsTrigger>
+          ))}
+          {/* A copy of the list in active colors, clipped to the active tab, so pill and text move as one. */}
+          <TabsPrimitive.Indicator
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 transition-[clip-path] duration-[220ms] ease-in-out [clip-path:inset(var(--active-tab-top)_var(--active-tab-right)_var(--active-tab-bottom)_var(--active-tab-left)_round_9999px)] motion-reduce:duration-75"
+          >
+            <span className={cn(tabsListVariants(), listClass, "bg-foreground")}>
+              {TABS.map((tab) => (
+                <span
+                  key={tab}
+                  className={cn(
+                    "inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center border border-transparent whitespace-nowrap text-background",
+                    tabShape,
+                  )}
+                >
+                  {t.settings.tabs[tab]}
+                </span>
+              ))}
+            </span>
+          </TabsPrimitive.Indicator>
         </TabsList>
         <TabsContent value="profile">
           <ProfileTab />
