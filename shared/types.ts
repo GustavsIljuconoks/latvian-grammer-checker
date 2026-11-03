@@ -1,16 +1,24 @@
 // Shared between client and server. Keep it free of runtime dependencies.
 export const MAX_TEXT_CHARS = 20_000;
 
-export type Category = "grammar" | "spelling" | "punctuation" | "style";
+export const ERROR_CODES = [
+  "TEXT_EMPTY",
+  "TEXT_TOO_LONG",
+  "BAD_REQUEST",
+  "CORRECTION_FAILED",
+  "RATE_LIMITED",
+  "SUBSCRIPTION_REQUIRED",
+  "MODEL_NOT_CONFIGURED",
+  "UNAUTHORIZED",
+  "NOT_FOUND",
+  "INTERNAL",
+] as const;
 
-export type ErrorCode =
-  | "TEXT_EMPTY"
-  | "TEXT_TOO_LONG"
-  | "BAD_REQUEST"
-  | "CORRECTION_FAILED"
-  | "UNAUTHORIZED"
-  | "NOT_FOUND"
-  | "INTERNAL";
+export type ErrorCode = (typeof ERROR_CODES)[number];
+
+export const CATEGORIES = ["grammar", "spelling", "punctuation", "style"] as const;
+
+export type Category = (typeof CATEGORIES)[number];
 
 export interface Correction {
   original: string;
@@ -33,6 +41,31 @@ export interface DocumentDetail extends DocumentSummary {
   originalText: string;
   correctedText: string;
   corrections: Correction[];
+}
+
+/** Checks a user gets before a subscription is needed. */
+export const FREE_CHECKS = 3;
+
+/** Stripe's subscription statuses. */
+export type SubscriptionStatus =
+  | "active"
+  | "trialing"
+  | "past_due"
+  | "unpaid"
+  | "incomplete"
+  | "incomplete_expired"
+  | "canceled"
+  | "paused";
+
+export interface SubscriptionInfo {
+  /** True while the subscription gives unlimited checks. */
+  active: boolean;
+  /** null if the user never subscribed. */
+  status: SubscriptionStatus | null;
+  freeChecksLeft: number;
+  /** When the current period ends: the next payment, or the end of access if cancelled. */
+  currentPeriodEnd: string | null;
+  cancelAtPeriodEnd: boolean;
 }
 
 export interface ApiError {

@@ -1,4 +1,4 @@
-import type { Category, ErrorCode } from "../../../shared/types";
+import { FREE_CHECKS, type Category, type ErrorCode, type SubscriptionStatus } from "../../../shared/types";
 
 // Latvian count agreement: 1, 21, 31… take the singular; 11 and everything else the plural.
 const plural = (n: number, one: string, many: string) => `${n} ${n % 10 === 1 && n % 100 !== 11 ? one : many}`;
@@ -70,6 +70,10 @@ export const lv = {
     checking: "Pārbauda…",
     counts: (words: number, chars: number) =>
       `${plural(words, "vārds", "vārdi")} · ${plural(chars, "rakstzīme", "rakstzīmes")}`,
+    freeLeft: (n: number) => `Bezmaksas pārbaudes: ${n} no ${FREE_CHECKS}`,
+    subscribe: "Iegādāties abonementu",
+    demo: "Testa režīms",
+    demoHint: "Testa režīms: fiksēts teksts ar zināmām kļūdām. Valodas modelis netiek izsaukts, un pārbaude netiek ieskaitīta bezmaksas limitā.",
   },
   document: {
     title: "Rezultāts",
@@ -106,7 +110,7 @@ export const lv = {
   settings: {
     title: "Iestatījumi",
     subtitle: "Pārvaldiet savu profilu un kontu.",
-    tabs: { profile: "Profils", account: "Konts" },
+    tabs: { profile: "Profils", subscription: "Abonements", account: "Konts" },
     photo: "Profila foto",
     changePhoto: "Mainīt foto",
     removePhoto: "Noņemt",
@@ -129,6 +133,32 @@ export const lv = {
     deleteAccountConfirm: "Dzēst kontu?",
     irreversible: "Šo darbību nevar atsaukt.",
   },
+  subscription: {
+    freePlan: "Bezmaksas plāns",
+    freeText: (left: number) => `Atlikušās bezmaksas pārbaudes: ${left} no ${FREE_CHECKS}.`,
+    paidPlan: "Abonements",
+    paidText: "Neierobežots pārbaužu skaits, maksa reizi mēnesī.",
+    status: {
+      active: "Aktīvs",
+      trialing: "Izmēģinājums",
+      past_due: "Maksājums kavējas",
+      unpaid: "Neapmaksāts",
+      incomplete: "Nepabeigts",
+      incomplete_expired: "Beidzies",
+      canceled: "Atcelts",
+      paused: "Apturēts",
+    } satisfies Record<SubscriptionStatus, string>,
+    renewsOn: (date: string) => `Nākamais maksājums: ${date}`,
+    endsOn: (date: string) => `Aktīvs līdz ${date}, pēc tam netiks atjaunots.`,
+    subscribe: "Abonēt",
+    manage: "Pārvaldīt abonementu",
+    manageText: "Nomainiet maksājuma karti vai atceliet abonementu.",
+    paymentFailed: "Maksājumu neizdevās apstrādāt. Lūdzu atjaunojiet maksājuma karti.",
+    success: "Paldies! Abonements ir aktivizēts.",
+    activating: "Maksājums saņemts. Abonements tiek aktivizēts…",
+    cancelled: "Apmaksa netika pabeigta.",
+    stripeNote: "Maksājumus apstrādā Stripe. Kartes dati netiek saglabāti mūsu sistēmā.",
+  },
   dates: {
     today: "Šodien",
     yesterday: "Vakar",
@@ -138,6 +168,9 @@ export const lv = {
     TEXT_TOO_LONG: "Teksts ir pārāk garš (maks. 20 000 rakstzīmes)",
     BAD_REQUEST: "Nederīgs pieprasījums",
     CORRECTION_FAILED: "Kļūda teksta apstrādē. Lūdzu mēģiniet vēlreiz",
+    RATE_LIMITED: "Pārāk daudz pieprasījumu. Lūdzu uzgaidiet brīdi un mēģiniet vēlreiz",
+    SUBSCRIPTION_REQUIRED: "Bezmaksas pārbaudes ir izmantotas. Lai turpinātu, iegādājieties abonementu.",
+    MODEL_NOT_CONFIGURED: "Valodas modelis nav pieslēgts (nav API atslēgas). Izmēģiniet testa pārbaudi.",
     UNAUTHORIZED: "Sesija ir beigusies. Lūdzu piesakieties vēlreiz.",
     NOT_FOUND: "Dokuments netika atrasts",
     INTERNAL: "Radās kļūda. Lūdzu mēģiniet vēlreiz",

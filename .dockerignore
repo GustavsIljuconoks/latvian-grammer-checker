@@ -1,0 +1,7 @@
+# Secrets come in through env_file at run time, never into the image.
+.env
+**/node_modules
+**/dist
+.git
+*.log
+stripe.exe

@@ -1,0 +1,59 @@
+# Everything with one command:  docker compose up -d --build   →   http://localhost:8080
+# Optional services are switched on by COMPOSE_PROFILES in .env:
+#   stripe  forwards Stripe's payment events to the app (on your own computer)
+#   https   puts Caddy in front of the app with a certificate for DOMAIN (on the VPS)
+# For `npm run dev`, start only the database:  docker compose up -d mongo
+services:
+  mongo:
+    image: mongo:8
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:27017:27017" # for npm run dev and MongoDB Compass; not reachable from other machines
+    volumes:
+      - mongo-data:/data/db
+
+  app:
+    build:
+      context: .
+      args:
+        VITE_CLERK_PUBLISHABLE_KEY: ${VITE_CLERK_PUBLISHABLE_KEY}
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/grammar-checker
+      APP_URL: ${PUBLIC_URL:-http://localhost:8080}
+      PORT: "3001"
+    ports:
+      - "127.0.0.1:${APP_PORT:-8080}:3001"
+    depends_on:
+      - mongo
+
+  stripe:
+    image: stripe/stripe-cli:latest
+    profiles: [stripe]
+    restart: unless-stopped
+    command: >-
+      listen --api-key ${STRIPE_SECRET_KEY}
+      --forward-to app:3001/api/stripe/webhook
+      --events checkout.session.completed,customer.subscription.created,customer.subscription.updated,customer.subscription.deleted,customer.subscription.paused,customer.subscription.resumed
+    depends_on:
+      - app
+
+  caddy:
+    image: caddy:2
+    profiles: [https]
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+    depends_on:
+      - app
+
+volumes:
+  mongo-data:
+  caddy-data:

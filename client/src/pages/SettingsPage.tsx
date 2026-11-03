@@ -1,32 +1,37 @@
 import { Tabs as TabsPrimitive } from "@base-ui/react/tabs";
 import { useClerk, useUser } from "@clerk/react";
 import { useRef, useState, type ReactNode } from "react";
+import { useSearchParams } from "react-router";
 import { toast } from "sonner";
 import { useShell } from "@/components/AppShell";
 import { ConfirmAction } from "@/components/ConfirmAction";
 import { PageFrame } from "@/components/PageFrame";
+import { SubscriptionTab } from "@/components/SubscriptionTab";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger, tabsListVariants } from "@/components/ui/tabs";
 import { t } from "@/i18n";
-import { useApi } from "@/lib/api";
+import { errorMessage, useApi } from "@/lib/api";
 import { initials } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 const fieldClass =
   "h-auto rounded-[10px] border-0 bg-secondary px-3.5 py-3 text-sm shadow-none focus-visible:bg-[#ececE6] focus-visible:ring-2 focus-visible:ring-foreground/15";
 const pillClass = "h-[42px] rounded-full px-[22px] text-[13px] font-semibold";
-const TABS = ["profile", "account"] as const;
+const TABS = ["profile", "subscription", "account"] as const;
 const listClass = "h-auto w-fit gap-1 rounded-full p-1";
 const tabShape = "rounded-full px-[18px] py-[9px] text-[13px] font-semibold";
 const tabClass = cn(tabShape, "text-muted-foreground shadow-none data-active:bg-transparent data-active:shadow-none");
 
 export function SettingsPage() {
+  const [params] = useSearchParams();
+  // Links and Stripe's redirects open the subscription tab directly.
+  const [initialTab] = useState(() => (params.has("cilne") || params.has("abonements") ? "subscription" : "profile"));
   return (
     <PageFrame title={t.settings.title} subtitle={t.settings.subtitle}>
-      <Tabs defaultValue="profile" className="max-w-[640px]">
+      <Tabs defaultValue={initialTab} className="max-w-[640px]">
         <TabsList className={cn(listClass, "relative mb-7 bg-accent")}>
           {TABS.map((tab) => (
             <TabsTrigger key={tab} value={tab} className={tabClass}>
@@ -55,6 +60,9 @@ export function SettingsPage() {
         </TabsList>
         <TabsContent value="profile">
           <ProfileTab />
+        </TabsContent>
+        <TabsContent value="subscription">
+          <SubscriptionTab />
         </TabsContent>
         <TabsContent value="account">
           <AccountTab />
@@ -153,14 +161,18 @@ function ProfileTab() {
 
 function AccountTab() {
   const api = useApi();
-  const { user } = useUser();
   const { signOut } = useClerk();
   const { refreshRecent } = useShell();
 
   async function signOutEverywhere() {
-    const sessions = (await user?.getSessions()) ?? [];
-    await Promise.all(sessions.map((s) => s.revoke()));
-    await signOut();
+    try {
+      await api.signOutEverywhere();
+    } catch (err) {
+      toast.error(errorMessage(err));
+      return;
+    }
+    // This session was revoked too; signOut just clears it locally.
+    await signOut().catch(() => {});
   }
 
   return (
@@ -193,9 +205,9 @@ function AccountTab() {
           description={t.settings.irreversible}
           confirmLabel={t.settings.deleteAccount}
           onConfirm={async () => {
+            // The server deletes the data and the Clerk account, so only the local session is left.
             await api.deleteMe();
-            // later move this to server
-            await user?.delete();
+            await signOut().catch(() => {});
           }}
         />
       </DangerRow>

@@ -6,6 +6,8 @@ export const paths = {
   checker: "/",
   history: "/vesture",
   settings: "/iestatijumi",
+  /** Settings, opened on the subscription tab. */
+  subscription: "/iestatijumi?cilne=abonements",
   documentPattern: "/dokuments/:id",
   document: (id: string) => `/dokuments/${id}`,
 } as const;
