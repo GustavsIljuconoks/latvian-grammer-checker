@@ -47,7 +47,7 @@ export function CheckerPage() {
 
   return (
     <PageFrame title={t.checker.title} subtitle={t.checker.subtitle}>
-      <div className="surface flex min-h-[420px] flex-1 flex-col px-5 py-6 lg:px-8 lg:py-7">
+      <div className="surface @container/checker flex min-h-[420px] flex-1 flex-col px-5 py-6 lg:px-8 lg:py-7">
         <label htmlFor="checker-input" className="sr-only">
           {t.checker.inputLabel}
         </label>
@@ -73,8 +73,8 @@ export function CheckerPage() {
             )}
           </p>
         )}
-        <div className="mt-4 flex items-center justify-between gap-3 border-t border-hairline pt-4">
-          <div className="flex flex-col gap-1">
+        <div className="mt-4 flex flex-col gap-4 border-t border-hairline pt-4 @min-[36rem]/checker:flex-row @min-[36rem]/checker:items-center @min-[36rem]/checker:justify-between">
+          <div className="flex shrink-0 flex-col gap-1">
             <span className={cn("font-mono text-[11px] text-faint", tooLong && "text-destructive")}>
               {t.checker.counts(countWords(shown), shown.length)}
             </span>
@@ -84,7 +84,7 @@ export function CheckerPage() {
               </Link>
             )}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-2">
             <Button
               variant="ghost"
               aria-pressed={demo}
@@ -94,14 +94,14 @@ export function CheckerPage() {
                 setError(undefined);
                 setNeedsSubscription(false);
               }}
-              className={cn("h-[42px] rounded-full px-[18px] text-[13px] font-semibold", demo && "bg-secondary")}
+              className={cn("h-[42px] flex-1 rounded-full px-[18px] text-[13px] font-semibold @min-[36rem]/checker:flex-none", demo && "bg-secondary")}
             >
               {t.checker.demo}
             </Button>
             <Button
               onClick={check}
               disabled={busy || !shown.trim() || tooLong}
-              className="h-[42px] rounded-full px-[22px] text-[13px] font-semibold"
+              className="h-[42px] flex-1 rounded-full px-[22px] text-[13px] font-semibold @min-[36rem]/checker:flex-none"
             >
               {busy ? (
                 <>

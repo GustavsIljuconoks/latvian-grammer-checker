@@ -29,7 +29,7 @@ export function Sidebar({ recent, onNavigate }: { recent: DocumentSummary[]; onN
             "h-[42px] w-full rounded-full border-input text-[13px] font-medium shadow-[0_1px_2px_rgba(17,17,17,0.04)]",
           )}
         >
-          <span className="text-[15px] leading-none">+</span> {t.nav.newCheck}
+          <span className="leading-none">+</span> {t.nav.newCheck}
         </Link>
       </div>
 
