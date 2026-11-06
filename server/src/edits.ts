@@ -1,6 +1,6 @@
 import type { Category, Correction } from "../../shared/types";
 
-/** One fix as Claude reports it. Positions are found by the server, never taken from the model. */
+/** One fix as the model reports it. Positions are found by the server, never taken from the model. */
 export interface ProposedEdit {
   /** A short exact quote from the text that contains `original`, so repeated words can be told apart. */
   context: string;

@@ -1,16 +1,16 @@
 # Proof: latviešu valodas gramatikas labotājs
 
-RTU kursa prototips. Lietotājs ielīmē latviešu tekstu, Claude to izlabo, un katrs labojums tiek iezīmēts un paskaidrots. Katram kontam ir 3 bezmaksas pārbaudes, pēc tam vajag ikmēneša abonementu (Stripe).
+RTU kursa prototips. Lietotājs ielīmē latviešu tekstu, Gemini (vai izvēlētais Claude modelis) to izlabo, un katrs labojums tiek iezīmēts un paskaidrots. Katram kontam ir 3 bezmaksas pārbaudes, pēc tam vajag ikmēneša abonementu (Stripe).
 
 - `client/`: tīmekļa lietotne (React, Vite)
-- `server/`: API serveris (Express, MongoDB, Claude, Stripe)
+- `server/`: API serveris (Express, MongoDB, Gemini/Claude, Stripe)
 - `shared/`: tipi, kas kopīgi abiem
 
 ---
 
 ## Uzstādīšana soli pa solim
 
-Visas atslēgas ir testa režīmā, tāpēc īsta nauda netiek tērēta, izņemot Claude API credit.
+Stripe izmanto testa režīmu. Gemini API sākumā var izmantot ar bezmaksas plānu tā limitos; maksas plānā vai ar Claude API modeļa izsaukumi var radīt izmaksas.
 
 ### 1. Programmas
 
@@ -34,7 +34,15 @@ Mapes nosaukums jāatstāj **`latvian-grammer-checker-main`**: Docker pēc tā n
 3. **User model**: ieslēdgt **First and last name**, bet atstāt to **neobligātu**.
 4. **API keys**: nokopēt **Publishable key** (`pk_test_...`) un **Secret key** (`sk_test_...`). Ja Clerk prasa IP adresi, ierakstīt `0.0.0.0/0`.
 
-### 4. Claude API atslēga
+### 4. LLM API atslēga
+
+#### 4.1 Gemini API atslēga
+
+1. Atvērt [Google AI Studio](https://aistudio.google.com/apikey).
+2. Izveidot API atslēgu un saglabāt to `.env` mainīgajā `GEMINI_API_KEY`. Atslēga vajadzīga tikai serverim.
+3. AI Studio pārbaudīt projektam pieejamo modeļu un bezmaksas plāna limitus. Noklusētais modelis ir `gemini-3.8-flash`; to var mainīt ar `GEMINI_MODEL`.
+
+#### 4.2 Claude API atslēga
 
 1. [platform.claude.com](https://platform.claude.com)
 2. **API keys**: izveidot atslēgu (`sk-ant-...`).
@@ -63,7 +71,8 @@ Viss notiek ar ieslēgtu **Test mode**.
 |---|---|
 | `VITE_CLERK_PUBLISHABLE_KEY` | Clerk, `pk_test_...` (3. solis) |
 | `CLERK_SECRET_KEY` | Clerk, `sk_test_...` (3. solis) |
-| `ANTHROPIC_API_KEY` | Claude, `sk-ant-...` (4. solis) |
+| `LLM_PROVIDER` | `gemini` (noklusējums); alternatīva ir `claude` |
+| `GEMINI_API_KEY` | Google AI Studio (4. solis) |
 | `ENCRYPTION_KEY` | 2. punkta komandas izvade |
 | `STRIPE_SECRET_KEY` | Stripe, `sk_test_...` (5. solis) |
 | `STRIPE_PRICE_ID` | Stripe, `price_...` (5. solis) |
@@ -95,7 +104,7 @@ Atvēršanai izmantot **http://localhost:8080**.
 4. **Iestatījumi → Abonements → Abonēt**, maksāt ar testa karti `4242 4242 4242 4242` (jebkurš nākotnes datums, jebkurš CVC). Atgriežoties statusam jābūt **Aktīvs**.
 5. Ar karti `4000 0000 0000 0002` var redzēt noraidītu maksājumu.
 
-**Testa režīms bez izmaksām.** Pārbaudes lapā poga **Testa režīms** ieliek fiksētu tekstu ar piecām zināmām kļūdām. "Pārbaudīt tekstu" tad neizsauc Claude (netiek tērēti kredīti), dokuments saglabājas vēsturē kā parasti, un pārbaude netiek ieskaitīta 3 bezmaksas pārbaudēs, tāpēc tā strādā arī bez abonementa un bez API atslēgas. Teksts un labojumi ir `shared/demo.ts`. Vēlreiz nospiežot pogu, atgriežas tavs paša teksts.
+**Testa režīms bez izmaksām.** Pārbaudes lapā poga **Testa režīms** ieliek fiksētu tekstu ar piecām zināmām kļūdām. "Pārbaudīt tekstu" tad neizsauc valodas modeli, dokuments saglabājas vēsturē kā parasti, un pārbaude netiek ieskaitīta 3 bezmaksas pārbaudēs, tāpēc tā strādā arī bez abonementa un bez API atslēgas. Teksts un labojumi ir `shared/demo.ts`. Vēlreiz nospiežot pogu, atgriežas tavs paša teksts.
 
 ### Apturēšana un atkārtota palaišana
 
@@ -153,7 +162,7 @@ Pēc izmaiņas pārstartē (`docker compose up -d --force-recreate app` vai `npm
 
 1. `POST /api/documents` pārbauda tekstu (nav tukšs, ne vairāk par 20 000 rakstzīmēm), atļauj 10 pārbaudes minūtē vienam lietotājam un atbild `SUBSCRIPTION_REQUIRED`, ja lietotājs bez aktīva abonementa ir izmantojis 3 bezmaksas pārbaudes. Neveiksmīgas pārbaudes netiek skaitītas, un vēstures dzēšana pārbaudes neatdod.
 2. `server/src/fragment.ts` sadala tekstu fragmentos līdz 3000 rakstzīmēm pa rindkopu un teikumu robežām (projektējuma 5.1.2).
-3. `server/src/corrector.ts` sūta līdz 4 fragmentiem vienlaicīgi uz Claude ar latviešu korektora sistēmas uzvedni un prasa strukturētu JSON: katra labojuma precīzo oriģinālo tekstu, īsu citātu ap to, aizstājēju, paskaidrojumu latviski un kategoriju. Nepilnīga vai nederīga atbilde beidzas ar `CORRECTION_FAILED` (5.1.3).
+3. `server/src/llm.ts` izvēlas Gemini vai Claude adapteri. Kopīgais `server/src/corrector.ts` sadala un apvieno fragmentus; Gemini adapteris `server/src/gemini-corrector.ts` tos pārbauda secīgi ar kopīgu rindu, bet Claude pārbauda līdz 4 fragmentiem vienlaicīgi katram dokumentam. Abi izmanto latviešu korektora sistēmas uzvedni un strukturētu JSON: katra labojuma precīzo oriģinālo tekstu, īsu citātu ap to, aizstājēju, paskaidrojumu latviski un kategoriju. Gemini JSON papildus validē ar kopīgo Zod shēmu. Nepilnīga vai nederīga atbilde beidzas ar `CORRECTION_FAILED` (5.1.3). Gemini patēriņā pieskaita arī modeļa domāšanas tokenus, ja tie norādīti atbildē.
 4. `server/src/edits.ts` atrod katru labojumu pašā tekstā un aprēķina iezīmēšanas pozīcijas. Pozīcijas nekad netiek ņemtas no modeļa, un labojumi, ko nevar atrast vai kas pārklājas, tiek izmesti.
 5. `server/src/store.ts` saglabā dokumentu un labojumus, šifrētus ar AES-256-GCM (NFR 2.3), un pieraksta izmantotos tokenus `usage_logs`.
 
@@ -187,6 +196,6 @@ MongoDB kolekcijas: `users` (ar pārbaužu skaitu), `documents`, `corrections`, 
 ## Struktūra
 
 - `client/`: React + Vite + shadcn/ui. Lietotāja teksti `src/i18n/lv.ts`, ceļi `src/routes.ts`, API līgums `src/lib/api.ts`.
-- `server/`: Express + MongoDB + Claude + Stripe. Maršruti `src/app.ts`, testi `test/`.
+- `server/`: Express + MongoDB + Gemini/Claude + Stripe. Maršruti `src/app.ts`, testi `test/`.
 - `shared/types.ts`: API tipi un kļūdu kodi.
 - `Dockerfile`, `docker-compose.yml`, `Caddyfile`: palaišana ar Docker un HTTPS uz VPS.

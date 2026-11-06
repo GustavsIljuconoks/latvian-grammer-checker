@@ -1,5 +1,5 @@
 // Splits text into fragments along paragraph and sentence boundaries (design doc 5.1.2), so each
-// Claude request stays small. Fragments are contiguous and cover the text exactly: joining their
+// model request stays small. Fragments are contiguous and cover the text exactly: joining their
 // `text` gives back the input, and `offset` is where each one starts.
 
 export interface Fragment {

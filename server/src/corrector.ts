@@ -82,11 +82,11 @@ async function mapLimit<T, R>(items: T[], limit: number, fn: (item: T) => Promis
 export type CheckFragment = (text: string) => Promise<{ edits: ProposedEdit[]; inputTokens: number; outputTokens: number }>;
 
 /** Fragments the text, checks the pieces in parallel with `check` and merges the edits. Works with any model. */
-export function createFragmentedCorrector(model: string, check: CheckFragment): Corrector {
+export function createFragmentedCorrector(model: string, check: CheckFragment, maxParallel = MAX_PARALLEL): Corrector {
   return {
     async correct(text) {
       const parts = fragment(text);
-      const results = await mapLimit(parts, MAX_PARALLEL, async (part) => {
+      const results = await mapLimit(parts, maxParallel, async (part) => {
         // Whitespace-only fragments have nothing to check.
         if (!part.text.trim()) return { edits: [], inputTokens: 0, outputTokens: 0 };
         const result = await check(part.text);

@@ -1,4 +1,3 @@
-import Anthropic from "@anthropic-ai/sdk";
 import { clerkMiddleware, createClerkClient, getAuth } from "@clerk/express";
 import { MongoClient } from "mongodb";
 import Stripe from "stripe";
@@ -6,8 +5,9 @@ import { createClerkAccountService } from "./account";
 import { createApp } from "./app";
 import { createStripeBilling } from "./billing";
 import { loadConfig } from "./config";
-import { createClaudeCorrector, createDemoCorrector, unconfiguredCorrector } from "./corrector";
+import { createDemoCorrector } from "./corrector";
 import { createCipher } from "./crypto";
+import { createLlmCorrector } from "./llm";
 import { createMongoStore } from "./store";
 
 const config = loadConfig();
@@ -17,10 +17,10 @@ await mongo.connect();
 const store = await createMongoStore(mongo.db(), createCipher(config.encryptionKey));
 
 const { llm } = config;
-const corrector = llm.apiKey
-  ? createClaudeCorrector(new Anthropic({ apiKey: llm.apiKey, timeout: 120_000 }), llm.model)
-  : unconfiguredCorrector;
-console.log(llm.apiKey ? `Checking texts with Claude (${llm.model})` : "No ANTHROPIC_API_KEY: only test checks will work");
+const corrector = createLlmCorrector(llm);
+console.log(llm.apiKey
+  ? `Checking texts with ${llm.provider} (${llm.model})`
+  : `No ${llm.provider === "gemini" ? "GEMINI_API_KEY" : "ANTHROPIC_API_KEY"}: only test checks will work`);
 
 const clerk = createClerkClient({ secretKey: config.clerkSecretKey, publishableKey: config.clerkPublishableKey });
 const app = createApp({
